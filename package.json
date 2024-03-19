@@ -1,0 +1,44 @@
+{
+  "name": "electron-svg-viewer",
+  "productName": "SVG图片查看器",
+  "description": "用于查看本地SVG图片的软件",
+  "version": "1.0.0",
+  "type": "module",
+  "author": "zhch_hong@163.com",
+  "main": "packages/main/dist/index.js",
+  "scripts": {
+    "build": "npm run build:main && npm run build:preload && npm run build:renderer",
+    "compile": "cross-env MODE=production npm run build && electron-builder build -w",
+    "watch": "node scripts/watch.js",
+    "lint": "eslint . --ext js,mjs,cjs,ts,mts,cts,vue",
+    "typecheck": "npm run typecheck:main && npm run typecheck:preload && npm run typecheck:renderer",
+    "postinstall": "cross-env ELECTRON_RUN_AS_NODE=1 electron scripts/update-electron-vendors.js",
+    "format": "npx prettier --write \"**/*.{js,mjs,cjs,ts,mts,cts,vue,json}\""
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "~7.3.0",
+    "@vitejs/plugin-vue": "~5.0.4",
+    "cross-env": "~7.0.3",
+    "electron": "~29.1.4",
+    "electron-builder": "~24.13.3",
+    "eslint": "~8.57.0",
+    "eslint-plugin-vue": "~9.23.0",
+    "typescript": "~5.4.2",
+    "unplugin-auto-expose": "~0.3.0",
+    "vite": "~5.1.6",
+    "vue": "~3.4.21"
+  },
+  "build": {
+    "files": [
+      "packages/**/dist/**"
+    ],
+    "nsis": {
+      "language": "2052",
+      "installerLanguages": [
+        "zh_CN"
+      ],
+      "deleteAppDataOnUninstall": true
+    }
+  }
+}
+
