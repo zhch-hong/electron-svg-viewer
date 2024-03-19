@@ -46,6 +46,8 @@
       {
         "avoidEscape": true
       }
-    ]
+    ],
+    "no-empty": "off"
   }
 }
+

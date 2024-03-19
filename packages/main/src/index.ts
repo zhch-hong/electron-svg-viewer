@@ -1,7 +1,10 @@
-import { app } from 'electron';
+import { BrowserWindow, app, dialog, ipcMain, net, protocol } from 'electron';
 import './security-restrictions.js';
 import { restoreOrCreateWindow } from '/@/mainWindow';
 import { platform } from 'node:process';
+import { statSync } from 'node:fs';
+import { readdir } from 'node:fs/promises';
+import { extname, resolve } from 'node:path';
 
 /**
  * Prevent electron from running multiple instances.
@@ -11,6 +14,11 @@ if (!isSingleInstance) {
   app.quit();
   process.exit(0);
 }
+
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'svg', privileges: { standard: true, secure: true, supportFetchAPI: true } },
+]);
+
 app.on('second-instance', restoreOrCreateWindow);
 
 /**
@@ -38,7 +46,37 @@ app.on('activate', restoreOrCreateWindow);
 app
   .whenReady()
   .then(() => {
+    protocol.handle('svg', (request) => {
+      const { host, pathname } = new URL(request.url);
+      // console.log(host, pathname);
+      // console.log(resolve(host + ':\\', pathname));
+
+      return net.fetch('file://' + resolve(host + ':\\', pathname));
+    });
+
+    ipcMainListener();
     restoreOrCreateWindow();
   })
   .catch((e) => console.error('Failed create window:', e));
+
+function ipcMainListener() {
+  ipcMain.handle('readFolderSVG', async ({ sender }) => {
+    let folder: string[] | undefined;
+    try {
+      const win = BrowserWindow.fromWebContents(sender)!;
+      folder = await dialog.showOpenDialogSync(win, { properties: ['openDirectory'] });
+    } catch (error) {}
+    if (!folder) return;
+
+    const folderDir = folder[0];
+    const files = await readdir(folderDir);
+    return files.reduce((prev: string[], next) => {
+      next = resolve(folderDir, next);
+      if (statSync(next).isFile() && extname(next) === '.svg') {
+        prev.push(next);
+      }
+      return prev;
+    }, []);
+  });
+}
 

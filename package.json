@@ -39,6 +39,8 @@
       ],
       "deleteAppDataOnUninstall": true
     }
+  },
+  "dependencies": {
+    "element-plus": "^2.6.1"
   }
 }
-
