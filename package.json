@@ -7,9 +7,12 @@
   "author": "zhch_hong@163.com",
   "main": "packages/main/dist/index.js",
   "scripts": {
-    "build": "npm run build:main && npm run build:preload && npm run build:renderer",
-    "compile": "cross-env MODE=production npm run build && electron-builder build -w",
     "watch": "node scripts/watch.js",
+    "compile": "cross-env MODE=production npm run build && electron-builder build -w",
+    "build": "npm run build:main && npm run build:preload && npm run build:renderer",
+    "build:main": "cd ./packages/main && cross-env MODE=production vite build",
+    "build:preload": "cd ./packages/preload && cross-env MODE=production vite build",
+    "build:renderer": "cd ./packages/renderer && cross-env MODE=production vite build",
     "lint": "eslint . --ext js,mjs,cjs,ts,mts,cts,vue",
     "typecheck": "npm run typecheck:main && npm run typecheck:preload && npm run typecheck:renderer",
     "postinstall": "cross-env ELECTRON_RUN_AS_NODE=1 electron scripts/update-electron-vendors.js",
@@ -44,3 +47,4 @@
     "element-plus": "^2.6.1"
   }
 }
+

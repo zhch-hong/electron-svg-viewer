@@ -15,6 +15,18 @@
   "rules": {
     /** These rules are disabled because they are incompatible with prettier */
     "vue/html-self-closing": "off",
-    "vue/singleline-html-element-content-newline": "off"
+    "vue/singleline-html-element-content-newline": "off",
+    "vue/max-attributes-per-line": [
+      "warn",
+      {
+        "singleline": {
+          "max": 5
+        },
+        "multiline": {
+          "max": 1
+        }
+      }
+    ]
   }
 }
+

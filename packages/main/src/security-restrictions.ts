@@ -1,5 +1,5 @@
 import type { Session } from 'electron';
-import { app, shell } from 'electron';
+import { app, dialog, shell } from 'electron';
 import { URL } from 'node:url';
 
 /**
@@ -14,7 +14,7 @@ type Permission = Parameters<Exclude<Parameters<Session['setPermissionRequestHan
  */
 const ALLOWED_ORIGINS_AND_PERMISSIONS = new Map<string, Set<Permission>>(
   import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL
-    ? [[new URL(import.meta.env.VITE_DEV_SERVER_URL).origin, new Set()]]
+    ? [[new URL(import.meta.env.VITE_DEV_SERVER_URL).origin, new Set(['clipboard-read', 'clipboard-sanitized-write'])]]
     : []
 );
 
@@ -61,6 +61,7 @@ app.on('web-contents-created', (_, contents) => {
    */
   contents.session.setPermissionRequestHandler((webContents, permission, callback) => {
     const { origin } = new URL(webContents.getURL());
+    dialog.showMessageBox({ title: '请求权限', message: webContents.getURL() + ',' + permission });
 
     const permissionGranted = !!ALLOWED_ORIGINS_AND_PERMISSIONS.get(origin)?.has(permission);
     callback(permissionGranted);

@@ -4,7 +4,7 @@ import { restoreOrCreateWindow } from '/@/mainWindow';
 import { platform } from 'node:process';
 import { statSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
-import { extname, resolve } from 'node:path';
+import { basename, extname, resolve } from 'node:path';
 
 /**
  * Prevent electron from running multiple instances.
@@ -48,9 +48,6 @@ app
   .then(() => {
     protocol.handle('svg', (request) => {
       const { host, pathname } = new URL(request.url);
-      // console.log(host, pathname);
-      // console.log(resolve(host + ':\\', pathname));
-
       return net.fetch('file://' + resolve(host + ':\\', pathname));
     });
 
@@ -70,10 +67,10 @@ function ipcMainListener() {
 
     const folderDir = folder[0];
     const files = await readdir(folderDir);
-    return files.reduce((prev: string[], next) => {
+    return files.reduce((prev: Array<Record<'basename' | 'path', string>>, next) => {
       next = resolve(folderDir, next);
       if (statSync(next).isFile() && extname(next) === '.svg') {
-        prev.push(next);
+        prev.push({ basename: basename(next), path: next });
       }
       return prev;
     }, []);

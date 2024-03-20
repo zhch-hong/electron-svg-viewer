@@ -4,7 +4,7 @@
 import { ipcRenderer } from 'electron';
 import { versions } from './versions';
 
-function readFolderSVG(): Promise<string[] | undefined> {
+function readFolderSVG(): Promise<Array<Record<'basename' | 'path', string>> | undefined> {
   return ipcRenderer.invoke('readFolderSVG');
 }
 

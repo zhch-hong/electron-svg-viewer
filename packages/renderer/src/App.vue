@@ -1,18 +1,59 @@
 <template>
-  <ElButton @click="handleReadFolderSVG">选择文件夹</ElButton>
-  <ElImage v-for="svg in svgFiles" :key="svg" :src="`svg://${svg}`"></ElImage>
+  <div>
+    <ElButton @click="handleReadFolderSVG">选择文件夹</ElButton>
+  </div>
+  <div v-for="svg in svgFiles" :key="svg.path" class="item">
+    <ElImage
+      :src="svg.path"
+      :previewSrcList="previewSrcList"
+      fit="contain"
+      style="width: 100px; height: 100px"
+    ></ElImage>
+    <div>
+      <ElButton type="danger">删除</ElButton>
+      <ElButton type="success" @click="handleWriteClipboard(svg.basename)">复制</ElButton>
+    </div>
+  </div>
 </template>
 <script setup lang="ts">
 import { shallowRef } from 'vue';
 import { readFolderSVG } from '#preload';
 
-const svgFiles = shallowRef<string[]>([]);
+type A = Awaited<ReturnType<typeof readFolderSVG>>;
+
+const svgFiles = shallowRef<NonNullable<A>>([]);
+const previewSrcList = shallowRef<string[]>([]);
 
 const handleReadFolderSVG = async () => {
   const value = await readFolderSVG();
-  console.log(value);
+  if (value) {
+    svgFiles.value = value.map((svg) => ({ basename: svg.basename, path: `svg://${svg.path}` }));
+    previewSrcList.value = value.map((svg) => `svg://${svg.path}`);
+  }
+};
 
-  svgFiles.value = value || [];
+const handleWriteClipboard = (name: string) => {
+  navigator.clipboard.writeText(name);
 };
 </script>
+<style>
+body {
+  margin: 0;
+  /* background-image: linear-gradient(
+      45deg,
+      rgba(0, 0, 0, 0.4) 25%,
+      transparent 25%,
+      transparent 75%,
+      rgba(0, 0, 0, 0.4) 75%
+    ),
+    linear-gradient(45deg, rgba(0, 0, 0, 0.4) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.4) 75%);
+  background-position: 0 0, 5px 5px;
+  background-size: 12px 12px; */
+  background-color: #22272e;
+}
+
+.item {
+  display: inline-block;
+}
+</style>
 
