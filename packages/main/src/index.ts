@@ -1,15 +1,13 @@
-import { BrowserWindow, app, dialog, ipcMain, net, protocol } from 'electron';
-import './security-restrictions.js';
-import { restoreOrCreateWindow } from '/@/mainWindow';
-import { platform } from 'node:process';
-import { statSync } from 'node:fs';
+import { statSync, existsSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
-import { basename, extname, resolve } from 'node:path';
+import { basename, extname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { BrowserWindow, app, dialog, ipcMain, net, protocol } from 'electron';
+import Logger from 'electron-log';
 
-/**
- * Prevent electron from running multiple instances.
- */
-const isSingleInstance = app.requestSingleInstanceLock();
+console.log(process.argv);
+
+const isSingleInstance = app.requestSingleInstanceLock([process.argv[1]]);
 if (!isSingleInstance) {
   app.quit();
   process.exit(0);
@@ -19,42 +17,26 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'svg', privileges: { standard: true, secure: true, supportFetchAPI: true } },
 ]);
 
-app.on('second-instance', restoreOrCreateWindow);
-
-/**
- * Disable Hardware Acceleration to save more system resources.
- */
-app.disableHardwareAcceleration();
-
-/**
- * Shout down background process if all windows was closed
- */
-app.on('window-all-closed', () => {
-  if (platform !== 'darwin') {
-    app.quit();
+app.addListener('second-instance', (event, commandLine, workingDirectory, additionalData) => {
+  const svg = (additionalData as string[])[0];
+  if (existsSync(svg) && extname(svg) === '.svg') {
+    createWindow(svg);
   }
 });
 
-/**
- * @see https://www.electronjs.org/docs/latest/api/app#event-activate-macos Event: 'activate'.
- */
-app.on('activate', restoreOrCreateWindow);
+app.addListener('window-all-closed', () => {
+  Logger.info('window-all-closed');
+});
 
-/**
- * Create the application window when the background process is ready.
- */
-app
-  .whenReady()
-  .then(() => {
-    protocol.handle('svg', (request) => {
-      const { host, pathname } = new URL(request.url);
-      return net.fetch('file://' + resolve(host + ':\\', pathname));
-    });
+app.addListener('ready', () => {
+  protocol.handle('svg', (request) => {
+    const { host, pathname } = new URL(request.url);
+    return net.fetch('file://' + resolve(host + ':\\', pathname));
+  });
 
-    ipcMainListener();
-    restoreOrCreateWindow();
-  })
-  .catch((e) => console.error('Failed create window:', e));
+  ipcMainListener();
+  createWindow(process.argv[1]);
+});
 
 function ipcMainListener() {
   ipcMain.handle('readFolderSVG', async ({ sender }) => {
@@ -74,6 +56,29 @@ function ipcMainListener() {
       }
       return prev;
     }, []);
+  });
+}
+
+function createWindow(svg?: string) {
+  const browserWindow = new BrowserWindow({
+    webPreferences: {
+      sandbox: false,
+      preload: join(app.getAppPath(), 'packages/preload/dist/index.mjs'),
+    },
+  });
+
+  browserWindow.webContents.openDevTools();
+
+  if (import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined) {
+    browserWindow.loadURL(import.meta.env.VITE_DEV_SERVER_URL);
+  } else {
+    browserWindow.loadFile(fileURLToPath(new URL('./../../renderer/dist/index.html', import.meta.url)));
+  }
+
+  browserWindow.webContents.addListener('did-finish-load', () => {
+    if (svg) {
+      browserWindow.webContents.send('openSVG', svg);
+    }
   });
 }
 

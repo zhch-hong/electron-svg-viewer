@@ -16,8 +16,8 @@
   </div>
 </template>
 <script setup lang="ts">
-import { shallowRef } from 'vue';
-import { readFolderSVG } from '#preload';
+import { onMounted, shallowRef } from 'vue';
+import { readFolderSVG, onOpenSVG } from '#preload';
 
 type A = Awaited<ReturnType<typeof readFolderSVG>>;
 
@@ -35,6 +35,20 @@ const handleReadFolderSVG = async () => {
 const handleWriteClipboard = (name: string) => {
   navigator.clipboard.writeText(name);
 };
+
+const openSVG = (path: string) => {
+  console.log(path);
+
+  window.alert(path);
+};
+
+console.log(Date.now());
+
+onOpenSVG(openSVG);
+
+onMounted(() => {
+  console.log('onmounted', Date.now());
+});
 </script>
 <style>
 body {

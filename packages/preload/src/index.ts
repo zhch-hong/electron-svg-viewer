@@ -2,11 +2,14 @@
  * @module preload
  */
 import { ipcRenderer } from 'electron';
-import { versions } from './versions';
 
 function readFolderSVG(): Promise<Array<Record<'basename' | 'path', string>> | undefined> {
   return ipcRenderer.invoke('readFolderSVG');
 }
 
-export { versions, readFolderSVG };
+function onOpenSVG(params: (svgPath: string) => void) {
+  ipcRenderer.on('openSVG', (event, svgPath: string) => params(svgPath));
+}
+
+export { readFolderSVG, onOpenSVG };
 
