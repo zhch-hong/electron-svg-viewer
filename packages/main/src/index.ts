@@ -3,6 +3,7 @@ import { readdir } from 'node:fs/promises';
 import { basename, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BrowserWindow, app, dialog, ipcMain, net, protocol } from 'electron';
+import electronUpdater from 'electron-updater';
 import Logger from 'electron-log';
 
 console.log(process.argv);
@@ -29,6 +30,11 @@ app.addListener('window-all-closed', () => {
 });
 
 app.addListener('ready', () => {
+  electronUpdater.autoUpdater.checkForUpdatesAndNotify().then((result) => {
+    Logger.info('checkForUpdatesAndNotify');
+    Logger.info(result?.updateInfo.files);
+  });
+
   protocol.handle('svg', (request) => {
     const { host, pathname } = new URL(request.url);
     return net.fetch('file://' + resolve(host + ':\\', pathname));
@@ -62,8 +68,7 @@ function ipcMainListener() {
 function createWindow(svg?: string) {
   const browserWindow = new BrowserWindow({
     webPreferences: {
-      sandbox: false,
-      preload: join(app.getAppPath(), 'packages/preload/dist/index.mjs'),
+      preload: join(app.getAppPath(), 'packages/preload/dist/index.cjs'),
     },
   });
 
