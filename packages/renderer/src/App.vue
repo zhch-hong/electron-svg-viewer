@@ -39,20 +39,18 @@ const handleWriteClipboard = (name: string) => {
 const openSVG = (path: string) => {
   console.log(path);
 
-  window.alert(path);
+  svgFiles.value = [{ path: path, basename: '' }];
+  previewSrcList.value = [`svg://${path}`];
 };
-
-console.log(Date.now());
 
 onOpenSVG(openSVG);
 
 onMounted(() => {
-  console.log('onmounted', Date.now());
+  //
 });
 </script>
 <style>
 body {
-  margin: 0;
   /* background-image: linear-gradient(
       45deg,
       rgba(0, 0, 0, 0.4) 25%,
@@ -63,11 +61,9 @@ body {
     linear-gradient(45deg, rgba(0, 0, 0, 0.4) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.4) 75%);
   background-position: 0 0, 5px 5px;
   background-size: 12px 12px; */
-  background-color: #22272e;
 }
 
 .item {
   display: inline-block;
 }
 </style>
-

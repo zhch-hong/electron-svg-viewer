@@ -7,4 +7,4 @@ nsis:
   deleteAppDataOnUninstall: true
 publish:
   provider: generic
-  url: http://192.168.0.7:8420/static
+  url: https://www.zhchhong.cn/static
