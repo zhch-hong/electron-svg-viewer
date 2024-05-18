@@ -1,0 +1,4 @@
+{
+  "vue.complete.casing.props": "camel",
+  "vue.complete.casing.tags": "pascal"
+}
